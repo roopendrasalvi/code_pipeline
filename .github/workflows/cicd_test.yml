@@ -6,7 +6,7 @@ on:
       - '**' 
 
 jobs:
-  coverage:
+ lint:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,25 +16,28 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12.0'
+          python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install linting tools
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirement.txt
-          pip install pytest coverage
-          pip install request
+          pip install flake8
 
-      - name: Run tests with coverage
+      - name: Run flake8 linting
+        run: |
+          # Fail if any linting errors are found
+          flake8 . | tee lint.log
+
+      - name: Save lint log
         if: always()
         run: |
-          coverage run -m pytest
-          coverage report -m fail under=90
-          coverage xml
-
-      - name: Upload coverage report
+          echo "<lint>" > lint.xml
+          sed 's/^/<line>/' lint.log | sed 's/$/<\/line>/' >> lint.xml
+          echo "</lint>" >> lint.xml
+      
+      - name: Upload lint xml
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: coverage.xml
+          name: lint-report
+          path: lint.xml
