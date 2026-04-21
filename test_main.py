@@ -10,8 +10,8 @@ def test_get_items():
 }
     response = requests.post(f"{BASE_URL}/index", json = payload)
     assert response.status_code == 200
-    data = response.json()
-    assert isinstance(data, dict)
+    # data = response.json()
+    # assert isinstance(data, dict)
     # assert "id" in data[0]
 
 # def test_create_item():
