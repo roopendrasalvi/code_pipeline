@@ -1,0 +1,12 @@
+fastapi==0.111.0
+uvicorn==0.29.0
+python-dotenv==1.0.0
+
+# Git reading
+gitpython==3.1.43
+
+# Vector DB — in-memory mode, no Docker needed
+qdrant-client==1.9.1
+
+# Local embeddings — no API key, runs fully offline
+sentence-transformers==3.0.1
