@@ -54,3 +54,51 @@ jobs:
         with:
           name: lint-report
           path: lint-report.pdf
+
+ type-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install type checker
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy fpdf
+
+      - name: Run mypy type checking
+        run: |
+          mypy calculator.py  | tee mypy.log
+
+      - name: Convert type-check log to PDF
+        if: always()
+        run: |
+            python - <<EOF
+            from fpdf import FPDF
+
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", "B", 16)
+            pdf.cell(0, 10, "Type Check", ln=True, align="C")
+            pdf.ln(10)
+
+            pdf.set_font("Courier", size=10)
+            with open("type-check.log") as f:
+                for line in f:
+                    pdf.multi_cell(0, 10, line.strip())
+
+            pdf.output("type-check.pdf")
+            EOF
+
+      - name: Upload type-check pdf
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: type-check
+          path: type-check.pdf
