@@ -102,3 +102,49 @@ jobs:
         with:
           name: type-check
           path: type-check.pdf
+
+ pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pre-commit and radon
+        run: |
+          python -m pip install --upgrade pip
+          pip install pre-commit radon fpdf
+
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files | tee pre-commit.log
+
+      - name: Convert pre-commit log to PDF
+        if: always()
+        run: |
+            python - <<EOF
+            from fpdf import FPDF
+
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", "B", 16)
+            pdf.cell(0, 10, "Pre-Commit", ln=True, align="C")
+            pdf.ln(10)
+
+            pdf.set_font("Courier", size=10)
+            with open("precommit.log") as f:
+                for line in f:
+                    pdf.multi_cell(0, 10, line.strip())
+
+            pdf.output("pre-commit.pdf")
+            EOF
+
+      - name: Upload pre-commit pdf
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: precommit
+          path: precommit.pdf
