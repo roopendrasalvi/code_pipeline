@@ -1,0 +1,14 @@
+repos:
+  - repo: local
+    hooks:
+      - id: radon-complexity
+        name: Radon Cyclomatic Complexity
+        entry: radon cc -s -a src
+        language: system
+        pass_filenames: false
+
+      - id: radon-maintainability
+        name: Radon Maintainability Index
+        entry: radon mi src
+        language: system
+        pass_filenames: false

@@ -135,7 +135,7 @@ jobs:
             pdf.ln(10)
 
             pdf.set_font("Courier", size=10)
-            with open("precommit.log") as f:
+            with open("pre-commit.log") as f:
                 for line in f:
                     pdf.multi_cell(0, 10, line.strip())
 
