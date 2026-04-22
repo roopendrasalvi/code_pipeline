@@ -191,29 +191,42 @@ jobs:
             exit 1
           fi
 
-      - name: Convert solid-checker log to PDF
-        if: always()
+    #   - name: Convert solid-checker log to PDF
+    #     if: always()
+    #     run: |
+    #         python - <<EOF
+    #         from fpdf import FPDF
+
+    #         pdf = FPDF()
+    #         pdf.add_page()
+    #         pdf.set_font("Arial", "B", 16)
+    #         pdf.cell(0, 10, "Solid-Checker", ln=True, align="C")
+    #         pdf.ln(10)
+
+    #         pdf.set_font("Courier", size=10)
+    #         with open("solid-checker.log") as f:
+    #             for line in f:
+    #                 pdf.multi_cell(0, 10, line.strip())
+
+    #         pdf.output("solid-checker.pdf")
+    #         EOF
+
+    #   - name: Upload solid-checker pdf
+    #     if: always()
+    #     uses: actions/upload-artifact@v4
+    #     with:
+    #       name: solid-checker
+    #       path: solid-checker.pdf
+
+      - name: Generate PDF Report
+        if: always()   
         run: |
-            python - <<EOF
-            from fpdf import FPDF
+            echo "Generating PDF report..."
+            solid-checker --report main.py > solid_report.pdf
 
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_font("Arial", "B", 16)
-            pdf.cell(0, 10, "Solid-Checker", ln=True, align="C")
-            pdf.ln(10)
-
-            pdf.set_font("Courier", size=10)
-            with open("solid-checker.log") as f:
-                for line in f:
-                    pdf.multi_cell(0, 10, line.strip())
-
-            pdf.output("solid-checker.pdf")
-            EOF
-
-      - name: Upload solid-checker pdf
+      - name: Upload PDF Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: solid-checker
-          path: solid-checker.pdf
+            name: solid-checker-report
+            path: solid_report.pdf
