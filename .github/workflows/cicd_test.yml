@@ -167,7 +167,7 @@ jobs:
 
       - name: Run Solid-Checker
         run: |
-          solid-checker --report main.py | tee solid_checker.log
+          solid-checker --report main.py | tee solid-checker.log
 
       - name: Run Evaluate Score
         run: |
@@ -205,19 +205,6 @@ jobs:
 
             pdf.output("solid-checker.pdf")
             EOF
-
-    #   - name: Upload solid-checker pdf
-    #     if: always()
-    #     uses: actions/upload-artifact@v4
-    #     with:
-    #       name: solid-checker
-    #       path: solid-checker.pdf
-
-    #   - name: Generate PDF Report
-    #     if: always()   
-    #     run: |
-    #         echo "Generating PDF report..."
-    #         solid-checker --report main.py > solid_report.pdf
 
       - name: Upload PDF Report
         if: always()
