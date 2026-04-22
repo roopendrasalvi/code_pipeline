@@ -171,7 +171,7 @@ jobs:
 
       - name: Run Evaluate Score
         run: |
-          OUTPUT=$(cat solid.log)
+          OUTPUT=$(cat solid-checker.log)
           echo "$OUTPUT"
 
           SCORE=$(solid-checker --report main.py | awk -F' ' '/Overall SOLID Score/ {print $5}' | cut -d'/' -f1)
@@ -180,9 +180,9 @@ jobs:
           SCORE_INT=$(echo "$SCORE*100" | bc | cut -d'.' -f1)
 
           if [ "$SCORE_INT" -gt 70 ]; then
-            echo "✅ Code quality acceptable, continuing pipeline."
+            echo "Code quality acceptable, continuing pipeline."
           else
-            echo "❌ Code quality score too low: $SCORE"
+            echo "Code quality score too low: $SCORE"
             exit 1
           fi
 
