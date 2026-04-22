@@ -167,49 +167,44 @@ jobs:
 
       - name: Run Solid-Checker
         run: |
-          set PYTHONUTF8=1          
-          solid-checker --report main.py --json > solid_report.json
+          solid-checker --report main.py | tee solid_checker.log
 
-      - name: Run Solid-Checker and Evaluate Score
+      - name: Run Evaluate Score
         run: |
-          OUTPUT=$(solid-checker --report main.py)
+          OUTPUT=$(cat solid.log)
           echo "$OUTPUT"
 
-          # Extract the numeric part of "Overall SOLID Score: 1.00/1.00"
           SCORE=$(solid-checker --report main.py | awk -F' ' '/Overall SOLID Score/ {print $5}' | cut -d'/' -f1)
           echo "Extracted Overall SOLID SCORE: $SCORE"
 
-          # Compare against threshold (70%)
           SCORE_INT=$(echo "$SCORE*100" | bc | cut -d'.' -f1)
 
           if [ "$SCORE_INT" -gt 70 ]; then
             echo "✅ Code quality acceptable, continuing pipeline."
           else
             echo "❌ Code quality score too low: $SCORE"
-            echo "Generating report..."
-            echo "$OUTPUT"
             exit 1
           fi
 
-    #   - name: Convert solid-checker log to PDF
-    #     if: always()
-    #     run: |
-    #         python - <<EOF
-    #         from fpdf import FPDF
+      - name: Convert solid-checker log to PDF
+        if: always()
+        run: |
+            python - <<EOF
+            from fpdf import FPDF
 
-    #         pdf = FPDF()
-    #         pdf.add_page()
-    #         pdf.set_font("Arial", "B", 16)
-    #         pdf.cell(0, 10, "Solid-Checker", ln=True, align="C")
-    #         pdf.ln(10)
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", "B", 16)
+            pdf.cell(0, 10, "Solid-Checker", ln=True, align="C")
+            pdf.ln(10)
 
-    #         pdf.set_font("Courier", size=10)
-    #         with open("solid-checker.log") as f:
-    #             for line in f:
-    #                 pdf.multi_cell(0, 10, line.strip())
+            pdf.set_font("Courier", size=10)
+            with open("solid-checker.log") as f:
+                for line in f:
+                    pdf.multi_cell(0, 10, line.strip())
 
-    #         pdf.output("solid-checker.pdf")
-    #         EOF
+            pdf.output("solid-checker.pdf")
+            EOF
 
     #   - name: Upload solid-checker pdf
     #     if: always()
@@ -218,11 +213,11 @@ jobs:
     #       name: solid-checker
     #       path: solid-checker.pdf
 
-      - name: Generate PDF Report
-        if: always()   
-        run: |
-            echo "Generating PDF report..."
-            solid-checker --report main.py > solid_report.pdf
+    #   - name: Generate PDF Report
+    #     if: always()   
+    #     run: |
+    #         echo "Generating PDF report..."
+    #         solid-checker --report main.py > solid_report.pdf
 
       - name: Upload PDF Report
         if: always()
