@@ -74,7 +74,7 @@ jobs:
 
       - name: Run mypy type checking
         run: |
-          mypy calculator.py  | tee mypy.log
+          mypy main.py  | tee mypy.log
 
       - name: Convert type-check log to PDF
         if: always()
