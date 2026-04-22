@@ -28,16 +28,29 @@ jobs:
           # Fail if any linting errors are found
           flake8 . | tee lint.log
 
-      - name: Save lint log
+      - name: Convert lint log to PDF
         if: always()
         run: |
-          echo "<lint>" > lint.xml
-          sed 's/^/<line>/' lint.log | sed 's/$/<\/line>/' >> lint.xml
-          echo "</lint>" >> lint.xml
-      
-      - name: Upload lint xml
+            python - <<EOF
+            from fpdf import FPDF
+
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", "B", 16)
+            pdf.cell(0, 10, "Lint Report", ln=True, align="C")
+            pdf.ln(10)
+
+            pdf.set_font("Courier", size=10)
+            with open("lint.log") as f:
+                for line in f:
+                    pdf.multi_cell(0, 10, line.strip())
+
+            pdf.output("lint-report.pdf")
+            EOF
+
+      - name: Upload lint pdf
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lint-report
-          path: lint.xml
+          path: lint-report.pdf
