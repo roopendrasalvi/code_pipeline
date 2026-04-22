@@ -148,3 +148,72 @@ jobs:
         with:
           name: pre-commit
           path: pre-commit.pdf
+
+ solid-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install solid-checker jq
+
+      - name: Run Solid-Checker
+        run: |
+          set PYTHONUTF8=1          
+          solid-checker --report main.py --json > solid_report.json
+
+      - name: Run Solid-Checker and Evaluate Score
+        run: |
+          OUTPUT=$(solid-checker --report main.py)
+          echo "$OUTPUT"
+
+          # Extract the numeric part of "Overall SOLID Score: 1.00/1.00"
+          SCORE=$(solid-checker --report main.py | awk -F' ' '/Overall SOLID Score/ {print $5}' | cut -d'/' -f1)
+          echo "Extracted Overall SOLID SCORE: $SCORE"
+
+          # Compare against threshold (70%)
+          SCORE_INT=$(echo "$SCORE*100" | bc | cut -d'.' -f1)
+
+          if [ "$SCORE_INT" -gt 70 ]; then
+            echo "✅ Code quality acceptable, continuing pipeline."
+          else
+            echo "❌ Code quality score too low: $SCORE"
+            echo "Generating report..."
+            echo "$OUTPUT"
+            exit 1
+          fi
+
+      - name: Convert solid-checker log to PDF
+        if: always()
+        run: |
+            python - <<EOF
+            from fpdf import FPDF
+
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", "B", 16)
+            pdf.cell(0, 10, "Solid-Checker", ln=True, align="C")
+            pdf.ln(10)
+
+            pdf.set_font("Courier", size=10)
+            with open("solid-checker.log") as f:
+                for line in f:
+                    pdf.multi_cell(0, 10, line.strip())
+
+            pdf.output("solid-checker.pdf")
+            EOF
+
+      - name: Upload solid-checker pdf
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solid-checker
+          path: solid-checker.pdf
